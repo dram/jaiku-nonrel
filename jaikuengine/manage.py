@@ -30,10 +30,6 @@ for x in os.listdir('.'):
     logging.debug("Adding %s to the sys.path", x)
     sys.path.insert(1, x)
 
-from appengine_django import InstallAppengineHelperForDjango
-
-InstallAppengineHelperForDjango()
-
 from common import component
 component.install_components()
 
