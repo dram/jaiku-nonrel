@@ -12,9 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from djangoappengine.settings_base import *
+
 import re
 import os
 import os.path
+
+# Add `vendor` to sys.path, maybe some other place is more suitable.
+import sys
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), 'vendor'))
+
+def get_validation_errors(outfile, app=None):
+    return 0
+
+from django.core.management import validation
+
+validation.get_validation_errors = get_validation_errors
 
 ###
 # Django related settings
@@ -30,13 +43,9 @@ ADMINS = (
 MANAGERS = ADMINS
 
 
-# This stuff is always going to be the same for an App Engine instance
-DATABASE_ENGINE = 'appengine'  # 'appengine' is the only supported engine
-DATABASE_NAME = ''             # Not used with appengine
-DATABASE_USER = ''             # Not used with appengine
-DATABASE_PASSWORD = ''         # Not used with appengine
-DATABASE_HOST = ''             # Not used with appengine
-DATABASE_PORT = ''             # Not used with appengine
+DATABASES['native'] = DATABASES['default']
+DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
+AUTOLOAD_SITECONF = 'siteconf'
 
 # The appengine_django code doesn't care about the address of memcached
 # because it is a built in API for App Engine
@@ -68,6 +77,12 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    # This loads the index definitions, so it has to come first
+    'autoload.middleware.AutoloadMiddleware',
+
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+
     'middleware.domain.DomainMiddleware',
     'middleware.auth.AuthenticationMiddleware',
     'middleware.exception.ExceptionMiddleware',
@@ -97,7 +112,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 # `python manage.py test` and the profiling code takes this list into
 # account while filtering calls
 INSTALLED_APPS = (
-     'appengine_django',
+     'django.contrib.sessions',
+     'djangotoolbox',
+     'autoload',
+     'dbindexer',
+
      'common',
      'actor',
      'api',
@@ -111,6 +130,9 @@ INSTALLED_APPS = (
      'install',
      'confirm',
      'components',
+
+     # djangoappengine should come last, so it can override a few manage.py commands
+    'djangoappengine',
 )
 
 # We override the default test runner so that we can be Totally Awesome
@@ -142,11 +164,11 @@ ROOT_NICK = 'root@example.com'
 
 # This is the domain where this is installed on App Engine. It will be
 # necessary to know this if you plan on enabling SSL for login and join.
-GAE_DOMAIN = 'example.appspot.com'
+GAE_DOMAIN = 'jaiku-nonrel.appspot.com'
 
 # Enabling this means we expect to be spending most of our time on a 
 # Hosted domain
-HOSTED_DOMAIN_ENABLED = True
+HOSTED_DOMAIN_ENABLED = False
 
 # This is the domain you intend to serve your site from, when using hosted
 # domains. If SSL is enabled for login and join those requests will still 

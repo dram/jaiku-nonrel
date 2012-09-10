@@ -1,7 +1,9 @@
-application: "jaikuengine"
+application: "jaiku-nonrel"
 version: 1
-runtime: python
+runtime: python27
 api_version: 1
+threadsafe: no
+
 skip_files: |
  ^(.*/)?(
  (app\.yaml)|
@@ -14,15 +16,7 @@ skip_files: |
  (.*/RCS/.*)|
  (\..*)|
  (manage.py)|
- (simplejson/.*)|
- (gdata/.*)|
- (atom/.*)|
- (tlslite/.*)|
- (oauth/.*)|
- (beautifulsoup/.*)|
- (django/.*)|
  (docutils/.*)|
- (epydoc/.*)|
  (appengine_django/management/commands/.*)|
  (README)|
  (CHANGELOG)|
@@ -30,11 +24,8 @@ skip_files: |
  (bin/.*)|
  (images/ads/.*)|
  (images/ext/.*)|
- (wsgiref/.*)|
- (elementtree/.*)|
  (doc/.*)|
  (profiling/.*)|
- (vendor/.*)
  )$
 
 default_expiration: "1d"
@@ -90,16 +81,16 @@ handlers:
   secure: optional
 
 - url: /api/process_queue
-  script: "main.py"
+  script: "djangoappengine.main.application"
   secure: optional
 
 - url: /_ah/queue/default
-  script: "main.py"
+  script: "djangoappengine.main.application"
   login: admin
   secure: optional
 
 - url: .*
-  script: "main.py"
+  script: "djangoappengine.main.application"
   secure: optional
   # login: admin
 
