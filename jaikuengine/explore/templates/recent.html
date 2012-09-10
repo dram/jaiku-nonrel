@@ -1,0 +1,16 @@
+{% extends 'common/templates/base_sidebar.html' %}
+{% block title %}Latest Public {{POST_NAME}}s{% endblock %}
+{% block content %}
+  <h1>Latest Public {{POST_NAME}}s</h1>
+
+  <div id='stream'>
+    {% include 'common/templates/stream.html' %}
+    {% include 'common/templates/paging.html' %}
+    {% include 'common/templates/feeds.html' %}
+  </div>
+
+{% endblock %}
+
+{% block sidebar %}
+  {% include 'common/templates/sidebar_search.html' %}
+{% endblock %}

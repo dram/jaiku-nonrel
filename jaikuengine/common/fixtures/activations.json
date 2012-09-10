@@ -1,0 +1,18 @@
+[{"pk": "activation/hermit@example.com/email/hermit@example.com",
+  "model": "common.Activation",
+  "fields": {"actor": "hermit@example.com",
+             "content": "hermit@example.com",
+             "type": "email",
+             "code": "TESTCODE"
+             }
+  },
+ {"pk": "activation/hermit@example.com/mobile/+14155551212",
+  "model": "common.Activation",
+  "fields": {"actor": "hermit@example.com",
+             "content": "+14155551212",
+             "type": "mobile",
+             "code": "TESTCODE"
+             }
+  } 
+]
+

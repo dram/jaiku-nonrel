@@ -1,0 +1,27 @@
+{% load avatar format entry presence %}
+{% if not hide_avatar %}
+{% linked_avatar entry.actor_ref "u" request %}
+{% endif %}
+{{entry|entry_icon}}
+<h3>{% if request %}{{entry|linked_entry_title:request}}{% else %}{{entry|linked_entry_title}}{% endif %}</h3>
+<p class="meta">
+  By {% actor_link entry.actor_ref request %}
+  {% ifnotequal entry.actor entry.owner %}
+    to {% actor_link entry.owner_ref request %}
+  {% endifnotequal %}
+  {% if not hide_timesince %}
+    {{entry.created_at|je_timesince}} ago
+  {% endif %}
+  {% if entry.extra.location %}
+    in {{ entry.extra.location|location }}
+  {% endif %}
+  {% if not hide_links %}
+  {% if not entry.extra.comment_count %}
+    <a href="{% url_for entry request %}#comments" class="add-comment">Add Comment</a>
+  {% else %}
+    <a href="{% url_for entry request %}#comments" class="comments">{{entry.extra.comment_count}} Comment{{entry.extra.comment_count|pluralize}}</a>
+  {% endif %}
+
+  {% entry_remove request.user entry user_is_admin %}
+  {% endif %}
+</p>

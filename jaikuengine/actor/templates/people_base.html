@@ -1,0 +1,29 @@
+{% extends 'common/templates/base_wide.html' %}
+{% load nonce avatar vcard format %}
+
+{% block content %}
+
+{% block people %}
+{% endblock %}
+
+{% block side-nav %}
+<div id="side-nav">
+  <ul>
+    <li>
+    <a href="{% url_for view request %}/contacts">{{whose}} contacts</a>
+    </li>
+    <li>
+    <a href="{% url_for view request %}/followers">{{whose}} followers</a>
+    </li>
+    {% if request.user %}
+    <li>
+    <a href="{% url_for view request %}/invite">Invite friends</a>
+    </li>
+    {% endif %}
+  </ul>
+</div>
+
+{% endblock %}
+
+
+{% endblock %}

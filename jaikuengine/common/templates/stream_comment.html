@@ -1,0 +1,21 @@
+{% load avatar format entry presence%}
+{% if not hide_avatar %}
+{% linked_avatar entry.actor_ref "u" request %}
+{% endif %}
+<p class="comment">
+  {% if request %}{{entry|format_comment:request}}{% else %}{{entry|format_comment}}{% endif %}
+</p>
+<p class="meta">
+  Comment from {% actor_link entry.actor_ref request %} on
+  <a href="{% url_for entry request %}" title="{{entry.extra.entry_title}}">{{entry.extra.entry_title}}</a>
+  by {% if request %}{{entry.extra.entry_actor|entry_actor_link:request}}{% else %}{{entry.extra.entry_actor|entry_actor_link}}{% endif %}
+  {% if entry.owner_ref.is_channel %}
+    to {% actor_link entry.owner_ref request %}
+  {% endif %}
+  {% if not hide_timesince %}
+    {{entry.created_at|je_timesince}} ago
+  {% endif %}
+  {% if entry.extra.location %}
+    in {{ entry.extra.location|location }}
+  {% endif %}
+</p>

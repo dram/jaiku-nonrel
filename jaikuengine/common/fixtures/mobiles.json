@@ -1,0 +1,15 @@
+[{"pk": "relation/email/popular@example.com/+16505551212",
+  "model": "common.Relation",
+  "fields": {"owner": "popular@example.com",
+             "target": "+16505551212",
+             "relation": "mobile"
+             }
+  },
+ {"pk": "relation/email/celebrity@example.com/+14085551212",
+  "model": "common.Relation",
+  "fields": {"owner": "celebrity@example.com",
+             "target": "+14085551212",
+             "relation": "mobile"
+             }
+  }
+]

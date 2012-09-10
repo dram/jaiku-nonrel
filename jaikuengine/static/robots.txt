@@ -1,0 +1,21 @@
+User-agent: Spinn3r
+Disallow: /
+
+User-agent: *
+Disallow: /feed/rss
+
+User-agent: *
+Disallow: /feed/atom
+
+User-agent: *
+Disallow: /rss
+
+User-agent: *
+Disallow: /atom
+
+User-agent: *
+Disallow: /json
+
+User-agent: *
+Crawl-delay: 30
+Disallow:
