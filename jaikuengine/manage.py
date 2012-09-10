@@ -20,9 +20,6 @@ import sys
 
 logging.getLogger().setLevel(logging.INFO)
 
-from common import component
-component.install_components()
-
 from django.core.management import execute_manager
 try:
     import settings # Assumed to be in the same directory.
