@@ -23,7 +23,7 @@ from common import util
 def settings(request):
 
   d = dict([(k, getattr(django_settings, k)) 
-            for k in django_settings.get_all_members()])
+            for k in dir(django_settings)])
   return dict(**d)
 
 def components(request):
