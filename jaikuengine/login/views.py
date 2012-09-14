@@ -54,7 +54,7 @@ def login_login(request):
         if (not settings.HOSTED_DOMAIN_ENABLED 
             or not settings.SSL_LOGIN_ENABLED):
           response = http.HttpResponseRedirect(redirect_to)
-          response = user.set_user_cookie(response, current_user, rememberme)
+          response = user.set_user_cookie(request, response, current_user, rememberme)
           return response
         
         # otherwise, we're going to have to redirect to set the cookie on
@@ -91,7 +91,7 @@ def login_noreally(request):
     cache.delete('sso/%s' % sso_token)
     actor_ref = api.actor_get(api.ROOT, nick)
     response = http.HttpResponseRedirect(redirect_to)
-    response = user.set_user_cookie(response, actor_ref, rememberme)
+    response = user.set_user_cookie(request, response, actor_ref, rememberme)
     return response
   return http.HttpResponseRedirect('/login')
 

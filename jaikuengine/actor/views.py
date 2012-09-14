@@ -622,7 +622,7 @@ def actor_settings(request, nick, page='index'):
                                     'Password updated')
       request.user.password = util.hash_password(request.user.nick, password)
       # TODO(mikie): change when cookie-auth is changed
-      user.set_user_cookie(response, request.user)
+      user.set_user_cookie(request, response, request.user)
       return response
     except:
       exception.handle_exception(request)

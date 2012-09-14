@@ -15,7 +15,6 @@
 import datetime
 import logging
 
-from appengine_django.sessions.models import Session
 from django.conf import settings
 from google.appengine.ext import db
 import oauth.oauth as oauth
@@ -36,7 +35,7 @@ def get_user_from_request(request):
   token = request.COOKIES.get(settings.PASSWORD_COOKIE, None)
   if nick:
     # try to authenticate the dude via cookie
-    user = authenticate_user_cookie(nick, token)
+    user = authenticate_user_cookie(request, nick, token)
     return user
 
   if (settings.API_ALLOW_LEGACY_AUTH 
@@ -63,41 +62,17 @@ def get_user_from_request(request):
 
   return None
 
-def purge_expired_user_auth_token_keys():
-  """ Remove expired tokens from the database. """
-
-  #TODO: Remove hard coded limit
-  limit = 10
-  try:
-    query = Session.gql("WHERE expire_date <= :1", api.utcnow())
-    expired_tokens = query.count()
-    if expired_tokens:
-      db.delete(query.fetch(limit))
-      logging.info("Removed %d expired user authentication "
-                   "tokens (%d remaining)",
-                   min(limit, expired_tokens),
-                   max(0, expired_tokens-limit))
-  except Exception, e:
-    logging.exception('Unhandled exception while removing expired tokens')
-  return
-
-def generate_user_auth_token_key(nick, token):
-  return "user_auth_token/%s/%s" % (nick, token)
-
-def lookup_user_auth_token(nick, token):
+def lookup_user_auth_token(request):
   """ Look up a user authentication token from the database cache. """
 
-  key = generate_user_auth_token_key(nick, token)
-  user_auth_token_blob = Session.get_by_key_name(key)
-  if not user_auth_token_blob:
+  if not 'data' in request.session:
     return None
-  elif user_auth_token_blob.expire_date <= api.utcnow():
+  elif request.session.get_expiry_date() <= api.utcnow():
     return None
   else:
-    user_auth_token = user_auth_token_blob.session_data.decode("utf-8")
-    return user_auth_token
+    return request.session['data'].decode("utf-8")
 
-def generate_user_auth_token(nick,
+def generate_user_auth_token(request,
                              password,
                              timeout=(14 * 24 * 60 * 60)):
   """ Generates a user authentication token and stores it in the
@@ -108,23 +83,15 @@ def generate_user_auth_token(nick,
   frequently than was acceptable.
 
   """
-  # Clear cache of expired tokens
-  purge_expired_user_auth_token_keys()
-
-  token = util.hash_generic(util.generate_uuid())
-  key = generate_user_auth_token_key(nick, token)
   # Set an expiration date to enable us to purge old, inactive
   # sessions from the database. Cookie expiration dates are what
   # actually govern how long sessions last.
-  expire_date = (api.utcnow() +
-                 datetime.timedelta(seconds=timeout))
-  session = Session(key_name=key,
-                    session_data=db.Blob(password.encode("utf-8")),
-                    expire_date=expire_date)
-  session.put()
-  return token
+  request.session.set_expiry(datetime.timedelta(seconds=timeout))
+  request.session['data'] = password.encode("utf-8")
 
-def authenticate_user_cookie(nick, token):
+  return request.session.session_key
+
+def authenticate_user_cookie(request, nick, token):
   user = api.actor_get_safe(api.ROOT, nick)
   if not user:
     return None
@@ -132,7 +99,7 @@ def authenticate_user_cookie(nick, token):
   # user's authenticated via cookie have full access
   user.access_level = api.DELETE_ACCESS
 
-  cached_token = lookup_user_auth_token(user.nick, token)
+  cached_token = lookup_user_auth_token(request)
   if not cached_token:
     return None
 
@@ -195,7 +162,7 @@ def lookup_user_by_login(login, password):
   return None
 
 
-def set_user_cookie(response, user, remember=False):
+def set_user_cookie(request, response, user, remember=False):
   # We set max-age (because that's what HTTP 1.1 requires
   # We set expires because IE6/IE7/IE8 don't support max-age
   # We set both to be safe. 
@@ -207,7 +174,7 @@ def set_user_cookie(response, user, remember=False):
     expires = None
     max_age_delta = None
 
-  auth_token = generate_user_auth_token(user.nick, user.password)
+  auth_token = generate_user_auth_token(request, user.password)
 
   if settings.COOKIE_DOMAIN == "localhost":
     response.set_cookie(settings.USER_COOKIE, 
