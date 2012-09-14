@@ -17,7 +17,6 @@ skip_files: |
  (\..*)|
  (manage.py)|
  (docutils/.*)|
- (appengine_django/management/commands/.*)|
  (README)|
  (CHANGELOG)|
  (Makefile)|
