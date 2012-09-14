@@ -17,7 +17,6 @@ import logging
 
 from google.appengine.ext import db as models
 
-import appengine_django.models as aed_models
 from oauth import oauth
 from django.conf import settings
 from django.db import models as django_models
@@ -78,7 +77,7 @@ def _to_api(v):
 
 # Base Models, Internal Only
 
-class ApiMixinModel(aed_models.BaseModel):
+class ApiMixinModel(models.Model):
   def to_api(self):
     o = {}
     for prop in self.properties().keys():
