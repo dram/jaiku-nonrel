@@ -10,7 +10,7 @@ INSTALL
 1. Download and install App Engine SDK for Python into ``/usr/local/``.
 2. Checkout this repo, and copy ``local_settings.example.py`` to
    ``local_settings.py`` in ``jaikuengine`` to run server locally.
-3. Run ``python manage.py runserver``.
+3. Run ``python manage.py runserver 8080``.
 
 DEPLOY
 ======
