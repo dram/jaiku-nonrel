@@ -15,6 +15,7 @@
 import datetime
 import logging
 
+from django.contrib.sessions.models import Session
 from django.conf import settings
 from google.appengine.ext import db
 import oauth.oauth as oauth
@@ -62,6 +63,24 @@ def get_user_from_request(request):
 
   return None
 
+def purge_expired_user_auth_token_keys():
+  """ Remove expired tokens from the database. """
+
+  #TODO: Remove hard coded limit
+  limit = 10
+  try:
+    objs = Session.objects.filter(expire_date__gte=api.utcnow())
+    expired_tokens = len(objs)
+    if expired_tokens:
+      objs[:limit].delete()
+      logging.info("Removed %d expired user authentication "
+                   "tokens (%d remaining)",
+                   min(limit, expired_tokens),
+                   max(0, expired_tokens-limit))
+  except Exception, e:
+    logging.exception('Unhandled exception while removing expired tokens')
+  return
+
 def lookup_user_auth_token(request):
   """ Look up a user authentication token from the database cache. """
 
@@ -83,6 +102,9 @@ def generate_user_auth_token(request,
   frequently than was acceptable.
 
   """
+  # Clear cache of expired tokens
+  purge_expired_user_auth_token_keys()
+
   # Set an expiration date to enable us to purge old, inactive
   # sessions from the database. Cookie expiration dates are what
   # actually govern how long sessions last.
