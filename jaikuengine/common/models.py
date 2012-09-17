@@ -20,6 +20,7 @@ from google.appengine.ext import db as models
 from oauth import oauth
 from django.conf import settings
 from django.db import models as django_models
+import djangotoolbox.fields
 
 from common import profile
 from common import properties
@@ -216,6 +217,18 @@ class DeletedMarkerModel(CachingModel):
   def is_deleted(self):
     return self.deleted_at
 
+class DjangoDeletedMarkerModel(django_models.Model):
+  class Meta:
+      abstract = True
+
+  deleted_at = django_models.DateTimeField(null=True)
+
+  def mark_as_deleted(self):
+    self.deleted_at = datetime.datetime.utcnow()
+    self.save()
+
+  def is_deleted(self):
+    return self.deleted_at
 
 # Public Models
 
@@ -261,7 +274,7 @@ def actor_url(nick, actor_type, path='', request=None, mobile=False):
                                   nick,
                                   path)
 
-class Actor(DeletedMarkerModel):
+class Actor(DjangoDeletedMarkerModel):
   """
   extra:
     channel_count - int; number of channels
@@ -281,20 +294,20 @@ class Actor(DeletedMarkerModel):
     comments_hide [user] - boolean; Whether comments should be hidden on 
                              overview
   """
-  nick = models.StringProperty()
+  nick = django_models.CharField(255, primary_key=True)
   # the appengine datastore is case-sensitive whereas human brains are not, 
   # Paul is not different from paul to regular people so we need a way to 
   # prevent duplicate names from cropping up, this adds an additional indexed 
   # property to support that
-  normalized_nick = models.StringProperty()
-  password = models.StringProperty()
-  privacy = models.IntegerProperty()
-  type = models.StringProperty()
-  extra = properties.DictProperty()
+  normalized_nick = django_models.CharField(255)
+  password = django_models.CharField(255)
+  privacy = django_models.IntegerField()
+  type = django_models.CharField(255)
+  extra = djangotoolbox.fields.DictField()
   # avatar_updated_at is used by DJabberd to get a list of changed avatar. We
   # set the default to a date before the launch so that initial avatars have an
   # updated_at that is less than any real changes.
-  avatar_updated_at = properties.DateTimeProperty(
+  avatar_updated_at = django_models.DateTimeField(
       default=datetime.datetime(2009, 01, 01))
 
   key_template = 'actor/%(nick)s'
@@ -349,7 +362,7 @@ class Actor(DeletedMarkerModel):
   def __repr__(self):
     # Get all properties, but not directly as property objects, because
     # constructor requires values to be passed in.
-    d = dict([(k, self.__getattribute__(k)) for k in self.properties().keys()])
+    d = dict([(k, self.__getattribute__(k)) for k in self._meta.get_all_field_names()])
     return "%s(**%s)" % (self.__class__.__name__, repr(d))
 
 class Image(CachingModel):

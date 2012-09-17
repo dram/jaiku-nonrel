@@ -941,10 +941,9 @@ def actor_get(api_user, nick):
 
   not_found_message = 'Actor not found: %s' % nick
 
-  key_name = Actor.key_from(nick=nick)
-  actor_ref = Actor.get_by_key_name(key_name)
-  
-  if not actor_ref:
+  try:
+    actor_ref = Actor.objects.get(pk=nick)
+  except Actor.DoesNotExist:
     raise exception.ApiNotFound(not_found_message)
     
   if actor_ref.is_deleted():
@@ -1143,10 +1142,9 @@ def actor_lookup_nick(api_user, nick):
     return actor_ref
 
   nick = clean.normalize_nick(clean.nick(nick))
-  query = Actor.gql('WHERE normalized_nick = :1',
-                    nick)
-  actor_ref = query.get()
-  if not actor_ref:
+  try:
+    actor_ref = Actor.objects.get(normalized_nick=nick)
+  except Actor.DoesNotExist:
     return None
   return actor_get_safe(api_user, actor_ref.nick)
 
@@ -3515,7 +3513,7 @@ def user_create(api_user, **kw):
 
   # Create the user
   actor = Actor(**params)
-  actor.put()
+  actor.save()
 
   # Create the streams
   presence_stream = stream_create_presence(api_user,
