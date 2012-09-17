@@ -72,7 +72,8 @@ def purge_expired_user_auth_token_keys():
     objs = Session.objects.filter(expire_date__lte=api.utcnow())
     expired_tokens = objs.count()
     if expired_tokens:
-      objs[:limit].delete()
+      for obj in objs[:limit]:
+        obj.delete()
       logging.info("Removed %d expired user authentication "
                    "tokens (%d remaining)",
                    min(limit, expired_tokens),
